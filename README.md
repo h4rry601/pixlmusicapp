@@ -1,6 +1,6 @@
-# flutter_application_1
+# pixlmusicapp
 
-A new Flutter project.
+A Flutter music application project.
 
 ## Getting Started
 
