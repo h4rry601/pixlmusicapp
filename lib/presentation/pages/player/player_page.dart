@@ -1,6 +1,7 @@
 // lib/presentation/pages/player/player_page.dart
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
+import 'package:nes_ui/nes_ui.dart';
 
 class PlayerPage extends StatefulWidget {
   static const String routeName = '/player';
@@ -14,7 +15,6 @@ class PlayerPage extends StatefulWidget {
 class PlayerPageState extends State<PlayerPage> with TickerProviderStateMixin {
   late AnimationController _progressController;
   late AnimationController _rotationController;
-  late Animation<double> _rotationAnimation;
 
   bool _isPlaying = false;
   bool _isShuffled = false;
@@ -36,11 +36,6 @@ class PlayerPageState extends State<PlayerPage> with TickerProviderStateMixin {
       vsync: this,
     );
 
-    _rotationAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(_rotationController);
-
     // Start rotation animation
     _rotationController.repeat();
   }
@@ -58,10 +53,8 @@ class PlayerPageState extends State<PlayerPage> with TickerProviderStateMixin {
     });
 
     if (_isPlaying) {
-      _rotationController.repeat();
       _progressController.repeat();
     } else {
-      _rotationController.stop();
       _progressController.stop();
     }
   }
@@ -114,45 +107,12 @@ class PlayerPageState extends State<PlayerPage> with TickerProviderStateMixin {
           Expanded(
             flex: 3,
             child: Center(
-              child: Container(
+              child: NesContainer(
                 width: 280,
                 height: 280,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.primary,
-                      AppColors.secondary,
-                      AppColors.accent,
-                    ],
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withOpacity(0.3),
-                      blurRadius: 20,
-                      spreadRadius: 5,
-                    ),
-                  ],
-                ),
-                child: AnimatedBuilder(
-                  animation: _rotationAnimation,
-                  builder: (context, child) {
-                    return Transform.rotate(
-                      angle: _rotationAnimation.value * 2 * 3.14159,
-                      child: Container(
-                        margin: EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppColors.playerBackground,
-                        ),
-                        child: Icon(
-                          Icons.music_note,
-                          size: 80,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    );
-                  },
+                backgroundColor: AppColors.primary,
+                child: Center(
+                  child: Icon(Icons.music_note, size: 80, color: Colors.white),
                 ),
               ),
             ),
@@ -171,7 +131,6 @@ class PlayerPageState extends State<PlayerPage> with TickerProviderStateMixin {
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: AppColors.textPrimary,
-                      fontFamily: 'Monospace',
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -181,7 +140,6 @@ class PlayerPageState extends State<PlayerPage> with TickerProviderStateMixin {
                     style: TextStyle(
                       fontSize: 18,
                       color: AppColors.textSecondary,
-                      fontFamily: 'Monospace',
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -213,17 +171,11 @@ class PlayerPageState extends State<PlayerPage> with TickerProviderStateMixin {
                           children: [
                             Text(
                               _formatDuration(_currentPosition),
-                              style: TextStyle(
-                                color: AppColors.textSecondary,
-                                fontFamily: 'Monospace',
-                              ),
+                              style: TextStyle(color: AppColors.textSecondary),
                             ),
                             Text(
                               _formatDuration(_totalDuration),
-                              style: TextStyle(
-                                color: AppColors.textSecondary,
-                                fontFamily: 'Monospace',
-                              ),
+                              style: TextStyle(color: AppColors.textSecondary),
                             ),
                           ],
                         ),
@@ -251,7 +203,7 @@ class PlayerPageState extends State<PlayerPage> with TickerProviderStateMixin {
                           Icons.shuffle,
                           color:
                               _isShuffled
-                                  ? AppColors.primary
+                                  ? const Color(0xFFFF8800)
                                   : AppColors.textSecondary,
                         ),
                         onPressed: _toggleShuffle,
@@ -264,18 +216,13 @@ class PlayerPageState extends State<PlayerPage> with TickerProviderStateMixin {
                         ),
                         onPressed: () {},
                       ),
-                      Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppColors.primary,
-                        ),
-                        child: IconButton(
-                          icon: Icon(
-                            _isPlaying ? Icons.pause : Icons.play_arrow,
-                            color: Colors.white,
-                            size: 32,
-                          ),
-                          onPressed: _togglePlayPause,
+                      NesButton(
+                        type: NesButtonType.primary,
+                        onPressed: _togglePlayPause,
+                        child: Icon(
+                          _isPlaying ? Icons.pause : Icons.play_arrow,
+                          color: Colors.white,
+                          size: 24,
                         ),
                       ),
                       IconButton(
@@ -291,7 +238,7 @@ class PlayerPageState extends State<PlayerPage> with TickerProviderStateMixin {
                           Icons.repeat,
                           color:
                               _isRepeated
-                                  ? AppColors.primary
+                                  ? const Color(0xFFFF8800)
                                   : AppColors.textSecondary,
                         ),
                         onPressed: _toggleRepeat,

@@ -9,6 +9,8 @@ import 'presentation/pages/home/home_page.dart';
 import 'presentation/pages/auth/login_page.dart';
 import 'presentation/pages/player/player_page.dart';
 import 'presentation/pages/playlist/playlist_page.dart';
+import 'package:nes_ui/nes_ui.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,18 +47,40 @@ class PIXLApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
 
       // Theme configuration
-      theme: ThemeData(
+      theme: flutterNesTheme(
         primaryColor: AppColors.primary,
+      ).copyWith(
         scaffoldBackgroundColor: AppColors.background,
+        textTheme: GoogleFonts.pressStart2pTextTheme(
+          Theme.of(context).textTheme.copyWith(
+            displayLarge: const TextStyle(fontSize: 32),
+            displayMedium: const TextStyle(fontSize: 28),
+            displaySmall: const TextStyle(fontSize: 24),
+            headlineLarge: const TextStyle(fontSize: 22),
+            headlineMedium: const TextStyle(fontSize: 20),
+            headlineSmall: const TextStyle(fontSize: 18),
+            titleLarge: const TextStyle(fontSize: 16),
+            titleMedium: const TextStyle(fontSize: 14),
+            titleSmall: const TextStyle(fontSize: 12),
+            bodyLarge: const TextStyle(fontSize: 14),
+            bodyMedium: const TextStyle(fontSize: 12),
+            bodySmall: const TextStyle(fontSize: 10),
+            labelLarge: const TextStyle(fontSize: 12),
+            labelMedium: const TextStyle(fontSize: 10),
+            labelSmall: const TextStyle(fontSize: 8),
+          ),
+        ).apply(
+          bodyColor: AppColors.textPrimary,
+          displayColor: AppColors.textPrimary,
+        ),
         appBarTheme: AppBarTheme(
           backgroundColor: AppColors.background,
           elevation: 0,
           iconTheme: IconThemeData(color: AppColors.textPrimary),
-          titleTextStyle: TextStyle(
+          titleTextStyle: GoogleFonts.pressStart2p(
             color: AppColors.textPrimary,
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            fontFamily: 'Monospace',
           ),
           systemOverlayStyle: SystemUiOverlayStyle.light,
         ),
@@ -66,54 +90,6 @@ class PIXLApp extends StatelessWidget {
           unselectedItemColor: AppColors.textSecondary,
           type: BottomNavigationBarType.fixed,
           elevation: 8,
-        ),
-        textTheme: TextTheme(
-          bodyLarge: TextStyle(
-            color: AppColors.textPrimary,
-            fontFamily: 'Monospace',
-          ),
-          bodyMedium: TextStyle(
-            color: AppColors.textPrimary,
-            fontFamily: 'Monospace',
-          ),
-          titleLarge: TextStyle(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Monospace',
-          ),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            textStyle: TextStyle(
-              fontFamily: 'Monospace',
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: AppColors.surface,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: AppColors.primary),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: AppColors.primary, width: 2),
-          ),
-          labelStyle: TextStyle(
-            color: AppColors.textSecondary,
-            fontFamily: 'Monospace',
-          ),
-          hintStyle: TextStyle(
-            color: AppColors.textSecondary,
-            fontFamily: 'Monospace',
-          ),
         ),
       ),
 

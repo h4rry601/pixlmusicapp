@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   // 8-bit inspired color palette
-  static const Color primary = Color(0xFF00FF41); // Bright green
-  static const Color secondary = Color(0xFF0080FF); // Bright blue
+  static const Color primary = Color(0xFFFF8800); // Bright green
+  static const Color secondary = Color(0xFFFFFFFF); // Bright blue
   static const Color accent = Color(0xFFFF0080); // Bright pink
 
   // Background colors

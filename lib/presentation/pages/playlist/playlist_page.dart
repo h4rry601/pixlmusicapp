@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../player/player_page.dart';
+import 'package:nes_ui/nes_ui.dart';
 
 class PlaylistPage extends StatefulWidget {
   final String playlistId;
@@ -48,26 +49,16 @@ class PlaylistPageState extends State<PlaylistPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Playlist image
-                      Container(
+                      NesContainer(
                         width: 120,
                         height: 120,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          gradient: LinearGradient(
-                            colors: [AppColors.accent, AppColors.primary],
+                        backgroundColor: AppColors.accent,
+                        child: Center(
+                          child: Icon(
+                            Icons.playlist_play,
+                            size: 60,
+                            color: Colors.white,
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.primary.withOpacity(0.3),
-                              blurRadius: 10,
-                              spreadRadius: 2,
-                            ),
-                          ],
-                        ),
-                        child: Icon(
-                          Icons.playlist_play,
-                          size: 60,
-                          color: Colors.white,
                         ),
                       ),
 
@@ -80,7 +71,6 @@ class PlaylistPageState extends State<PlaylistPage> {
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
-                          fontFamily: 'Monospace',
                         ),
                       ),
 
@@ -89,11 +79,7 @@ class PlaylistPageState extends State<PlaylistPage> {
                       // Playlist info
                       Text(
                         '25 songs • 1h 30m',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.white70,
-                          fontFamily: 'Monospace',
-                        ),
+                        style: TextStyle(fontSize: 16, color: Colors.white70),
                       ),
                     ],
                   ),
@@ -121,17 +107,18 @@ class PlaylistPageState extends State<PlaylistPage> {
                   // Play button
                   Expanded(
                     flex: 2,
-                    child: ElevatedButton.icon(
+                    child: NesButton(
+                      type: NesButtonType.primary,
                       onPressed: () {
                         Navigator.pushNamed(context, PlayerPage.routeName);
                       },
-                      icon: Icon(Icons.play_arrow),
-                      label: Text('Play'),
-                      style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.play_arrow),
+                          SizedBox(width: 8),
+                          Text('Play'),
+                        ],
                       ),
                     ),
                   ),
@@ -139,12 +126,10 @@ class PlaylistPageState extends State<PlaylistPage> {
                   SizedBox(width: 12),
 
                   // Shuffle button
-                  Container(
-                    decoration: BoxDecoration(
-                      color:
-                          _isShuffled ? AppColors.primary : AppColors.surface,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                  NesContainer(
+                    padding: const EdgeInsets.all(0),
+                    backgroundColor:
+                        _isShuffled ? AppColors.primary : AppColors.surface,
                     child: IconButton(
                       icon: Icon(
                         Icons.shuffle,
@@ -162,12 +147,10 @@ class PlaylistPageState extends State<PlaylistPage> {
                   SizedBox(width: 8),
 
                   // Repeat button
-                  Container(
-                    decoration: BoxDecoration(
-                      color:
-                          _isRepeated ? AppColors.primary : AppColors.surface,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                  NesContainer(
+                    padding: const EdgeInsets.all(0),
+                    backgroundColor:
+                        _isRepeated ? AppColors.primary : AppColors.surface,
                     child: IconButton(
                       icon: Icon(
                         Icons.repeat,
@@ -226,77 +209,66 @@ class _SongItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          // Song number
-          SizedBox(
-            width: 30,
-            child: Text(
-              songNumber.toString(),
-              style: TextStyle(
-                color: AppColors.textSecondary,
-                fontFamily: 'Monospace',
-                fontSize: 16,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: NesContainer(
+        padding: const EdgeInsets.all(16),
+        backgroundColor: AppColors.surface,
+        child: Row(
+          children: [
+            // Song number
+            SizedBox(
+              width: 30,
+              child: Text(
+                songNumber.toString(),
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 16),
               ),
             ),
-          ),
 
-          SizedBox(width: 16),
+            SizedBox(width: 16),
 
-          // Song info
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                    fontFamily: 'Monospace',
+            // Song info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  artist,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: AppColors.textSecondary,
-                    fontFamily: 'Monospace',
+                  SizedBox(height: 4),
+                  Text(
+                    artist,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
 
-          // Duration
-          Text(
-            duration,
-            style: TextStyle(
-              fontSize: 14,
-              color: AppColors.textSecondary,
-              fontFamily: 'Monospace',
+            // Duration
+            Text(
+              duration,
+              style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
             ),
-          ),
 
-          SizedBox(width: 16),
+            SizedBox(width: 16),
 
-          // More options
-          IconButton(
-            icon: Icon(Icons.more_vert, color: AppColors.textSecondary),
-            onPressed: () {
-              _showSongOptions(context);
-            },
-          ),
-        ],
+            // More options
+            IconButton(
+              icon: Icon(Icons.more_vert, color: AppColors.textSecondary),
+              onPressed: () {
+                _showSongOptions(context);
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -318,10 +290,7 @@ class _SongItem extends StatelessWidget {
                   leading: Icon(Icons.play_arrow, color: AppColors.primary),
                   title: Text(
                     'Play',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontFamily: 'Monospace',
-                    ),
+                    style: TextStyle(color: AppColors.textPrimary),
                   ),
                   onTap: () {
                     Navigator.pop(context);
@@ -335,10 +304,7 @@ class _SongItem extends StatelessWidget {
                   ),
                   title: Text(
                     'Add to Playlist',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontFamily: 'Monospace',
-                    ),
+                    style: TextStyle(color: AppColors.textPrimary),
                   ),
                   onTap: () => Navigator.pop(context),
                 ),
@@ -349,10 +315,7 @@ class _SongItem extends StatelessWidget {
                   ),
                   title: Text(
                     'Add to Favorites',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontFamily: 'Monospace',
-                    ),
+                    style: TextStyle(color: AppColors.textPrimary),
                   ),
                   onTap: () => Navigator.pop(context),
                 ),
@@ -360,10 +323,7 @@ class _SongItem extends StatelessWidget {
                   leading: Icon(Icons.share, color: AppColors.textPrimary),
                   title: Text(
                     'Share',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontFamily: 'Monospace',
-                    ),
+                    style: TextStyle(color: AppColors.textPrimary),
                   ),
                   onTap: () => Navigator.pop(context),
                 ),
@@ -374,10 +334,7 @@ class _SongItem extends StatelessWidget {
                   ),
                   title: Text(
                     'Song Info',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontFamily: 'Monospace',
-                    ),
+                    style: TextStyle(color: AppColors.textPrimary),
                   ),
                   onTap: () => Navigator.pop(context),
                 ),

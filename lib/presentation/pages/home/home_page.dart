@@ -4,6 +4,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../player/player_page.dart';
 import '../auth/login_page.dart';
+import 'package:nes_ui/nes_ui.dart';
 
 class HomePage extends StatefulWidget {
   static const String routeName = '/home';
@@ -94,15 +95,10 @@ class _HomeTab extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Welcome section
-            Container(
+            NesContainer(
               width: double.infinity,
-              padding: EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [AppColors.primary, AppColors.secondary],
-                ),
-                borderRadius: BorderRadius.circular(16),
-              ),
+              padding: const EdgeInsets.all(20),
+              backgroundColor: AppColors.primary,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -112,7 +108,6 @@ class _HomeTab extends StatelessWidget {
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
-                      fontFamily: 'Monospace',
                     ),
                   ),
                   SizedBox(height: 8),
@@ -121,7 +116,6 @@ class _HomeTab extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.white70,
-                      fontFamily: 'Monospace',
                     ),
                   ),
                 ],
@@ -137,7 +131,6 @@ class _HomeTab extends StatelessWidget {
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimary,
-                fontFamily: 'Monospace',
               ),
             ),
 
@@ -174,7 +167,6 @@ class _HomeTab extends StatelessWidget {
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimary,
-                fontFamily: 'Monospace',
               ),
             ),
 
@@ -220,7 +212,6 @@ class _SearchTab extends StatelessWidget {
               style: TextStyle(
                 fontSize: 18,
                 color: AppColors.textSecondary,
-                fontFamily: 'Monospace',
               ),
             ),
           ],
@@ -286,13 +277,10 @@ class _ProfileTab extends StatelessWidget {
         child: Column(
           children: [
             // Profile info
-            Container(
+            NesContainer(
               width: double.infinity,
-              padding: EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(16),
-              ),
+              padding: const EdgeInsets.all(20),
+              backgroundColor: AppColors.surface,
               child: Column(
                 children: [
                   CircleAvatar(
@@ -307,7 +295,6 @@ class _ProfileTab extends StatelessWidget {
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: AppColors.textPrimary,
-                      fontFamily: 'Monospace',
                     ),
                   ),
                   SizedBox(height: 8),
@@ -316,7 +303,6 @@ class _ProfileTab extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 14,
                       color: AppColors.textSecondary,
-                      fontFamily: 'Monospace',
                     ),
                   ),
                 ],
@@ -378,13 +364,9 @@ class _QuickAccessCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withOpacity(0.3)),
-        ),
+      child: NesContainer(
+        padding: const EdgeInsets.all(20),
+        backgroundColor: AppColors.surface,
         child: Column(
           children: [
             Icon(icon, size: 32, color: color),
@@ -395,7 +377,6 @@ class _QuickAccessCard extends StatelessWidget {
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimary,
-                fontFamily: 'Monospace',
               ),
             ),
           ],
@@ -410,23 +391,18 @@ class _MusicList extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: List.generate(5, (index) {
-        return Container(
-          margin: EdgeInsets.only(bottom: 12),
-          padding: EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            children: [
-              Container(
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: NesContainer(
+            padding: const EdgeInsets.all(16),
+            backgroundColor: AppColors.surface,
+            child: Row(
+              children: [
+              NesContainer(
                 width: 50,
                 height: 50,
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(Icons.music_note, color: Colors.white),
+                backgroundColor: AppColors.primary,
+                child: Center(child: Icon(Icons.music_note, color: Colors.white)),
               ),
               SizedBox(width: 16),
               Expanded(
@@ -439,7 +415,6 @@ class _MusicList extends StatelessWidget {
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
-                        fontFamily: 'Monospace',
                       ),
                     ),
                     Text(
@@ -447,7 +422,6 @@ class _MusicList extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 14,
                         color: AppColors.textSecondary,
-                        fontFamily: 'Monospace',
                       ),
                     ),
                   ],
@@ -461,7 +435,7 @@ class _MusicList extends StatelessWidget {
               ),
             ],
           ),
-        );
+        ));
       }),
     );
   }
@@ -488,7 +462,6 @@ class _LibraryItem extends StatelessWidget {
         title,
         style: TextStyle(
           color: AppColors.textPrimary,
-          fontFamily: 'Monospace',
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -496,7 +469,6 @@ class _LibraryItem extends StatelessWidget {
         subtitle,
         style: TextStyle(
           color: AppColors.textSecondary,
-          fontFamily: 'Monospace',
         ),
       ),
       trailing: Icon(Icons.arrow_forward_ios, color: AppColors.textSecondary),
@@ -522,7 +494,7 @@ class _ProfileOption extends StatelessWidget {
       leading: Icon(icon, color: AppColors.primary),
       title: Text(
         title,
-        style: TextStyle(color: AppColors.textPrimary, fontFamily: 'Monospace'),
+        style: TextStyle(color: AppColors.textPrimary),
       ),
       trailing: Icon(Icons.arrow_forward_ios, color: AppColors.textSecondary),
       onTap: onTap,

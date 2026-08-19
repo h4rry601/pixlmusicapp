@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../pages/auth/login_page.dart';
+import 'package:nes_ui/nes_ui.dart';
 
 class SplashPage extends StatefulWidget {
   static const String routeName = '/splash';
@@ -83,33 +84,17 @@ class SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Logo animation
+              // Logo animation (Using the GIF)
               AnimatedBuilder(
                 animation: _logoAnimation,
                 builder: (context, child) {
                   return Transform.scale(
                     scale: _logoAnimation.value,
-                    child: Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        gradient: LinearGradient(
-                          colors: [AppColors.primary, AppColors.secondary],
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withOpacity(0.3),
-                            blurRadius: 20,
-                            spreadRadius: 5,
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        Icons.music_note,
-                        size: 60,
-                        color: Colors.white,
-                      ),
+                    child: Image.asset(
+                      'assets/images/pixl_animation.gif',
+                      width: 150,
+                      height: 150,
+                      fit: BoxFit.contain,
                     ),
                   );
                 },
@@ -127,12 +112,8 @@ class SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
                       offset: Offset(0, 20 * (1 - _textAnimation.value)),
                       child: Text(
                         AppStrings.appName,
-                        style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
+                        style: Theme.of(context).textTheme.displayLarge?.copyWith(
                           color: AppColors.textPrimary,
-                          fontFamily: 'Monospace',
-                          letterSpacing: 2,
                         ),
                       ),
                     ),
@@ -148,13 +129,12 @@ class SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
                 builder: (context, child) {
                   return Opacity(
                     opacity: _textAnimation.value,
-                    child: SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 3,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          AppColors.primary,
+                    child: NesBlinker(
+                      child: Text(
+                        'LOADING...',
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 16,
                         ),
                       ),
                     ),
