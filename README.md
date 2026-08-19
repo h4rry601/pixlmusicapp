@@ -1,16 +1,3 @@
-# pixlmusicapp
+# PIXL MUSIC: app nghe nhạc khiến bạn quên đi Spotify hay Apple Music là gì
 
-A Flutter music application project.
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Ứng dụng được xây dựng tâm huyết bởi Harry Patterson a.k.a BinhHT, sau khi trải nghiệm quá nhiều các app nghe nhạc khác nhau, cùng với niềm đam mê với các dòng game thùng 8bit ngày xưa, tôi đã tự tạo nên PIXL - một app nghe nhạc hội tụ đủ những gì bạn mong muốn thay vì bỏ tiền mua các gói nâng cấp của các app nghe nhạc hiện nay
