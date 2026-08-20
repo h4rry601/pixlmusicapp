@@ -224,32 +224,42 @@ class LoginPageState extends State<LoginPage> {
                     // Login button
                     Theme(
                       data: Theme.of(context).copyWith(
-                        primaryColor: const Color(0xFFFF8800),
+                        extensions: [
+                          ...Theme.of(context).extensions.values.where(
+                            (extension) => extension is! NesButtonTheme,
+                          ),
+                          Theme.of(context)
+                              .extension<NesButtonTheme>()!
+                              .copyWith(primary: const Color(0xFFFF8800)),
+                        ],
                       ),
                       child: NesButton(
                         type: NesButtonType.primary,
                         onPressed: _isLoading ? null : _handleLogin,
-                        child:
-                            _isLoading
-                                ? SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white,
+                        child: Center(
+                          child:
+                              _isLoading
+                                  ? SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white,
+                                      ),
+                                    ),
+                                  )
+                                  : Text(
+                                    AppStrings.login,
+                                    textAlign: TextAlign.center,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodyLarge?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
                                     ),
                                   ),
-                                )
-                                : Text(
-                                  AppStrings.login,
-                                  style: Theme.of(
-                                    context,
-                                  ).textTheme.bodyLarge?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
+                        ),
                       ),
                     ),
 

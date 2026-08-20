@@ -1,289 +1,114 @@
-// lib/presentation/pages/player/player_page.dart
 import 'package:flutter/material.dart';
-import '../../../core/constants/app_colors.dart';
-import 'package:nes_ui/nes_ui.dart';
 
-class PlayerPage extends StatefulWidget {
+import '../../../core/constants/app_colors.dart';
+import '../../../core/di/injection_container.dart';
+import '../../../features/audio/application/audio_controller.dart';
+import '../../../features/audio/domain/entities/playback_snapshot.dart';
+
+class PlayerPage extends StatelessWidget {
   static const String routeName = '/player';
 
   const PlayerPage({super.key});
 
-  @override
-  PlayerPageState createState() => PlayerPageState();
-}
-
-class PlayerPageState extends State<PlayerPage> with TickerProviderStateMixin {
-  late AnimationController _progressController;
-  late AnimationController _rotationController;
-
-  bool _isPlaying = false;
-  bool _isShuffled = false;
-  bool _isRepeated = false;
-  double _currentPosition = 0.0;
-  final double _totalDuration = 180.0; // 3 minutes in seconds
-
-  @override
-  void initState() {
-    super.initState();
-
-    _progressController = AnimationController(
-      duration: Duration(seconds: 1),
-      vsync: this,
-    );
-
-    _rotationController = AnimationController(
-      duration: Duration(seconds: 3),
-      vsync: this,
-    );
-
-    // Start rotation animation
-    _rotationController.repeat();
-  }
-
-  @override
-  void dispose() {
-    _progressController.dispose();
-    _rotationController.dispose();
-    super.dispose();
-  }
-
-  void _togglePlayPause() {
-    setState(() {
-      _isPlaying = !_isPlaying;
-    });
-
-    if (_isPlaying) {
-      _progressController.repeat();
-    } else {
-      _progressController.stop();
-    }
-  }
-
-  void _toggleShuffle() {
-    setState(() {
-      _isShuffled = !_isShuffled;
-    });
-  }
-
-  void _toggleRepeat() {
-    setState(() {
-      _isRepeated = !_isRepeated;
-    });
-  }
-
-  void _seekTo(double position) {
-    setState(() {
-      _currentPosition = position;
-    });
-  }
-
-  String _formatDuration(double seconds) {
-    int minutes = (seconds / 60).floor();
-    int remainingSeconds = (seconds % 60).floor();
-    return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
+  String _format(Duration duration) {
+    final minutes = duration.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final seconds = duration.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
   }
 
   @override
   Widget build(BuildContext context) {
+    final controller = getIt<AudioController>();
+
     return Scaffold(
       backgroundColor: AppColors.playerBackground,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        title: const Text('Now Playing'),
         leading: IconButton(
-          icon: Icon(Icons.keyboard_arrow_down, color: AppColors.textPrimary),
+          icon: const Icon(Icons.keyboard_arrow_down),
           onPressed: () => Navigator.pop(context),
         ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.more_vert, color: AppColors.textPrimary),
-            onPressed: () {},
-          ),
-        ],
       ),
-      body: Column(
-        children: [
-          // Album art section
-          Expanded(
-            flex: 3,
-            child: Center(
-              child: NesContainer(
-                width: 280,
-                height: 280,
-                backgroundColor: AppColors.primary,
-                child: Center(
-                  child: Icon(Icons.music_note, size: 80, color: Colors.white),
+      body: StreamBuilder<PlaybackSnapshot>(
+        stream: controller.snapshotStream,
+        builder: (context, snapshot) {
+          final state = snapshot.data ?? PlaybackSnapshot.empty();
+          final item = state.currentItem;
+          final duration = item?.duration ?? Duration.zero;
+          final maxSeconds = duration.inSeconds < 1
+              ? 1.0
+              : duration.inSeconds.toDouble();
+          final rawPositionSeconds = state.position.inSeconds.toDouble();
+          final positionSeconds = rawPositionSeconds.clamp(0.0, maxSeconds);
+
+          return Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: [
+                const Spacer(),
+                Container(
+                  width: 260,
+                  height: 260,
+                  color: AppColors.primary,
+                  child: const Icon(Icons.music_note, size: 88),
                 ),
-              ),
-            ),
-          ),
-
-          // Song info section
-          Expanded(
-            flex: 2,
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 32),
-              child: Column(
-                children: [
-                  Text(
-                    'Amazing Song',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
+                const SizedBox(height: 32),
+                Text(
+                  item?.title ?? 'Nothing Playing',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  item?.artist ?? 'Choose a song to start playback',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: AppColors.textSecondary),
+                ),
+                const SizedBox(height: 32),
+                Slider(
+                  value: positionSeconds,
+                  max: maxSeconds,
+                  onChanged: item == null
+                      ? null
+                      : (value) =>
+                          controller.seek(Duration(seconds: value.round())),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(_format(state.position)),
+                    Text(_format(duration)),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      iconSize: 40,
+                      icon: const Icon(Icons.skip_previous),
+                      onPressed: controller.skipToPrevious,
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Awesome Artist',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: AppColors.textSecondary,
+                    const SizedBox(width: 16),
+                    FilledButton(
+                      onPressed: item == null
+                          ? null
+                          : () => controller.togglePlayPause(state.playing),
+                      child: Icon(state.playing ? Icons.pause : Icons.play_arrow),
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 32),
-
-                  // Progress bar
-                  Column(
-                    children: [
-                      SliderTheme(
-                        data: SliderTheme.of(context).copyWith(
-                          activeTrackColor: AppColors.progressBar,
-                          inactiveTrackColor: AppColors.progressBarBackground,
-                          thumbColor: AppColors.progressBar,
-                          thumbShape: RoundSliderThumbShape(
-                            enabledThumbRadius: 8,
-                          ),
-                          trackHeight: 4,
-                        ),
-                        child: Slider(
-                          value: _currentPosition,
-                          max: _totalDuration,
-                          onChanged: _seekTo,
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              _formatDuration(_currentPosition),
-                              style: TextStyle(color: AppColors.textSecondary),
-                            ),
-                            Text(
-                              _formatDuration(_totalDuration),
-                              style: TextStyle(color: AppColors.textSecondary),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                    const SizedBox(width: 16),
+                    IconButton(
+                      iconSize: 40,
+                      icon: const Icon(Icons.skip_next),
+                      onPressed: controller.skipToNext,
+                    ),
+                  ],
+                ),
+                const Spacer(),
+              ],
             ),
-          ),
-
-          // Controls section
-          Expanded(
-            flex: 2,
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 32),
-              child: Column(
-                children: [
-                  // Secondary controls
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      IconButton(
-                        icon: Icon(
-                          Icons.shuffle,
-                          color:
-                              _isShuffled
-                                  ? const Color(0xFFFF8800)
-                                  : AppColors.textSecondary,
-                        ),
-                        onPressed: _toggleShuffle,
-                      ),
-                      IconButton(
-                        icon: Icon(
-                          Icons.skip_previous,
-                          color: AppColors.textPrimary,
-                          size: 32,
-                        ),
-                        onPressed: () {},
-                      ),
-                      NesButton(
-                        type: NesButtonType.primary,
-                        onPressed: _togglePlayPause,
-                        child: Icon(
-                          _isPlaying ? Icons.pause : Icons.play_arrow,
-                          color: Colors.white,
-                          size: 24,
-                        ),
-                      ),
-                      IconButton(
-                        icon: Icon(
-                          Icons.skip_next,
-                          color: AppColors.textPrimary,
-                          size: 32,
-                        ),
-                        onPressed: () {},
-                      ),
-                      IconButton(
-                        icon: Icon(
-                          Icons.repeat,
-                          color:
-                              _isRepeated
-                                  ? const Color(0xFFFF8800)
-                                  : AppColors.textSecondary,
-                        ),
-                        onPressed: _toggleRepeat,
-                      ),
-                    ],
-                  ),
-
-                  SizedBox(height: 24),
-
-                  // Additional controls
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      IconButton(
-                        icon: Icon(
-                          Icons.favorite_border,
-                          color: AppColors.textSecondary,
-                        ),
-                        onPressed: () {},
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.share, color: AppColors.textSecondary),
-                        onPressed: () {},
-                      ),
-                      IconButton(
-                        icon: Icon(
-                          Icons.playlist_add,
-                          color: AppColors.textSecondary,
-                        ),
-                        onPressed: () {},
-                      ),
-                      IconButton(
-                        icon: Icon(
-                          Icons.volume_up,
-                          color: AppColors.textSecondary,
-                        ),
-                        onPressed: () {},
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }

@@ -47,9 +47,7 @@ class PIXLApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
 
       // Theme configuration
-      theme: flutterNesTheme(
-        primaryColor: AppColors.primary,
-      ).copyWith(
+      theme: flutterNesTheme(primaryColor: const Color(0xFFFF8800)).copyWith(
         scaffoldBackgroundColor: AppColors.background,
         textTheme: GoogleFonts.pressStart2pTextTheme(
           Theme.of(context).textTheme.copyWith(
