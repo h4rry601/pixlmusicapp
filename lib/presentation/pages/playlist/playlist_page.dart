@@ -1,15 +1,25 @@
 // lib/presentation/pages/playlist/playlist_page.dart
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/di/injection_container.dart';
+import '../../../features/audio/application/audio_controller.dart';
+import '../../../features/audio/domain/entities/music_track.dart';
+import '../../../features/catalog/demo_tracks.dart';
 import '../player/player_page.dart';
-import 'package:nes_ui/nes_ui.dart';
 
 class PlaylistPage extends StatefulWidget {
   final String playlistId;
+  final String? playlistName;
+  final Color? accentColor;
 
   static const String routeName = '/playlist';
 
-  const PlaylistPage({super.key, required this.playlistId});
+  const PlaylistPage({
+    super.key,
+    required this.playlistId,
+    this.playlistName,
+    this.accentColor,
+  });
 
   @override
   PlaylistPageState createState() => PlaylistPageState();
@@ -19,17 +29,89 @@ class PlaylistPageState extends State<PlaylistPage> {
   bool _isShuffled = false;
   bool _isRepeated = false;
 
+  List<MusicTrack> get _tracks {
+    // Filter tracks by album/playlist if possible, else use all
+    final name = widget.playlistName ?? '';
+    final filtered = demoTracks
+        .where((t) =>
+            (t.album ?? '').toLowerCase().contains(name.toLowerCase()))
+        .toList();
+    return filtered.isNotEmpty ? filtered : demoTracks;
+  }
+
+  Color get _accent => widget.accentColor ?? AppColors.primary;
+
+  static const List<Color> _artColors = [
+    Color(0xFFFF8800),
+    Color(0xFFFF0080),
+    Color(0xFF8800FF),
+    Color(0xFF00AAFF),
+    Color(0xFF00FF88),
+    Color(0xFFFFCC00),
+    Color(0xFF00FFCC),
+    Color(0xFFFF4444),
+    Color(0xFF44AAFF),
+    Color(0xFFFF8844),
+  ];
+
+  Future<void> _playAll() async {
+    final tracks = _tracks;
+    await getIt<AudioController>().setQueue(tracks, startIndex: 0);
+    if (mounted) Navigator.pushNamed(context, PlayerPage.routeName);
+  }
+
+  Future<void> _playSong(int index) async {
+    final tracks = _tracks;
+    await getIt<AudioController>().setQueue(tracks, startIndex: index);
+    if (mounted) Navigator.pushNamed(context, PlayerPage.routeName);
+  }
+
+  Duration get _totalDuration => _tracks.fold(
+        Duration.zero,
+        (prev, t) => prev + (t.duration ?? Duration.zero),
+      );
+
+  String _formatDuration(Duration d) {
+    final h = d.inHours;
+    final m = d.inMinutes.remainder(60);
+    if (h > 0) return '${h}h ${m}m';
+    return '${m}m';
+  }
+
+  String _formatTrackDuration(Duration? d) {
+    if (d == null) return '--:--';
+    final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return '$m:$s';
+  }
+
   @override
   Widget build(BuildContext context) {
+    final tracks = _tracks;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: CustomScrollView(
         slivers: [
-          // App bar with playlist info
+          // ── Sliver App Bar ──────────────────────────────────────────
           SliverAppBar(
-            expandedHeight: 300,
+            expandedHeight: 280,
             pinned: true,
             backgroundColor: AppColors.surface,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
+            ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.share, color: Colors.white70),
+                onPressed: () {},
+              ),
+              IconButton(
+                icon: const Icon(Icons.more_vert, color: Colors.white70),
+                onPressed: () {},
+              ),
+            ],
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
                 decoration: BoxDecoration(
@@ -37,153 +119,131 @@ class PlaylistPageState extends State<PlaylistPage> {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      AppColors.primary.withOpacity(0.8),
-                      AppColors.secondary.withOpacity(0.6),
+                      _accent.withOpacity(0.9),
+                      _accent.withOpacity(0.3),
+                      AppColors.background,
                     ],
                   ),
                 ),
-                child: Padding(
-                  padding: EdgeInsets.all(20),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Playlist image
-                      NesContainer(
-                        width: 120,
-                        height: 120,
-                        backgroundColor: AppColors.accent,
-                        child: Center(
-                          child: Icon(
-                            Icons.playlist_play,
-                            size: 60,
+                child: SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 56, 20, 20),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Playlist artwork
+                        Container(
+                          width: 110,
+                          height: 110,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [_accent, _accent.withOpacity(0.4)],
+                            ),
+                            borderRadius: BorderRadius.circular(4),
+                            boxShadow: [
+                              BoxShadow(
+                                color: _accent.withOpacity(0.4),
+                                blurRadius: 20,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(Icons.playlist_play,
+                              size: 52, color: Colors.white),
+                        ),
+                        const SizedBox(height: 14),
+                        Text(
+                          widget.playlistName ?? 'My Playlist',
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
                         ),
-                      ),
-
-                      SizedBox(height: 16),
-
-                      // Playlist name
-                      Text(
-                        'My Favorite Playlist',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                        const SizedBox(height: 4),
+                        Text(
+                          '${tracks.length} songs • ${_formatDuration(_totalDuration)}',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.white.withOpacity(0.75),
+                          ),
                         ),
-                      ),
-
-                      SizedBox(height: 8),
-
-                      // Playlist info
-                      Text(
-                        '25 songs • 1h 30m',
-                        style: TextStyle(fontSize: 16, color: Colors.white70),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-            actions: [
-              IconButton(
-                icon: Icon(Icons.share, color: AppColors.textPrimary),
-                onPressed: () {},
-              ),
-              IconButton(
-                icon: Icon(Icons.more_vert, color: AppColors.textPrimary),
-                onPressed: () {},
-              ),
-            ],
           ),
 
-          // Playlist controls
+          // ── Controls ────────────────────────────────────────────────
           SliverToBoxAdapter(
-            child: Container(
-              padding: EdgeInsets.all(20),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               child: Row(
                 children: [
-                  // Play button
                   Expanded(
-                    flex: 2,
-                    child: NesButton(
-                      type: NesButtonType.primary,
-                      onPressed: () {
-                        Navigator.pushNamed(context, PlayerPage.routeName);
-                      },
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.play_arrow),
-                          SizedBox(width: 8),
-                          Text('Play'),
-                        ],
+                    child: FilledButton.icon(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: _accent,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                      onPressed: _playAll,
+                      icon: const Icon(Icons.play_arrow, color: Colors.white),
+                      label: const Text(
+                        'Play All',
+                        style: TextStyle(color: Colors.white, fontSize: 12),
                       ),
                     ),
                   ),
-
-                  SizedBox(width: 12),
-
-                  // Shuffle button
-                  NesContainer(
-                    padding: const EdgeInsets.all(0),
-                    backgroundColor:
-                        _isShuffled ? AppColors.primary : AppColors.surface,
-                    child: IconButton(
-                      icon: Icon(
-                        Icons.shuffle,
-                        color:
-                            _isShuffled ? Colors.white : AppColors.textPrimary,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _isShuffled = !_isShuffled;
-                        });
-                      },
-                    ),
+                  const SizedBox(width: 10),
+                  _ControlIconBtn(
+                    icon: Icons.shuffle,
+                    active: _isShuffled,
+                    activeColor: _accent,
+                    onTap: () {
+                      setState(() => _isShuffled = !_isShuffled);
+                    },
                   ),
-
-                  SizedBox(width: 8),
-
-                  // Repeat button
-                  NesContainer(
-                    padding: const EdgeInsets.all(0),
-                    backgroundColor:
-                        _isRepeated ? AppColors.primary : AppColors.surface,
-                    child: IconButton(
-                      icon: Icon(
-                        Icons.repeat,
-                        color:
-                            _isRepeated ? Colors.white : AppColors.textPrimary,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _isRepeated = !_isRepeated;
-                        });
-                      },
-                    ),
+                  const SizedBox(width: 8),
+                  _ControlIconBtn(
+                    icon: Icons.repeat,
+                    active: _isRepeated,
+                    activeColor: _accent,
+                    onTap: () {
+                      setState(() => _isRepeated = !_isRepeated);
+                    },
                   ),
                 ],
               ),
             ),
           ),
 
-          // Songs list
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                return _SongItem(
-                  songNumber: index + 1,
-                  title: 'Song ${index + 1}',
-                  artist: 'Artist ${index + 1}',
-                  duration: '3:${(30 + index).toString().padLeft(2, '0')}',
-                  onTap: () {
-                    Navigator.pushNamed(context, PlayerPage.routeName);
-                  },
-                );
-              },
-              childCount: 25, // Number of songs in playlist
+          // ── Songs List ──────────────────────────────────────────────
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final track = tracks[index];
+                  final artColor = _artColors[index % _artColors.length];
+                  return _SongItem(
+                    songNumber: index + 1,
+                    track: track,
+                    artColor: artColor,
+                    duration: _formatTrackDuration(track.duration),
+                    accentColor: _accent,
+                    onTap: () => _playSong(index),
+                  );
+                },
+                childCount: tracks.length,
+              ),
             ),
           ),
         ],
@@ -192,155 +252,193 @@ class PlaylistPageState extends State<PlaylistPage> {
   }
 }
 
-class _SongItem extends StatelessWidget {
-  final int songNumber;
-  final String title;
-  final String artist;
-  final String duration;
-  final VoidCallback onTap;
-
-  const _SongItem({
-    required this.songNumber,
-    required this.title,
-    required this.artist,
-    required this.duration,
+// ─── Control Icon Button ───────────────────────────────────────────────────
+class _ControlIconBtn extends StatelessWidget {
+  const _ControlIconBtn({
+    required this.icon,
+    required this.active,
+    required this.activeColor,
     required this.onTap,
   });
+
+  final IconData icon;
+  final bool active;
+  final Color activeColor;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      decoration: BoxDecoration(
+        color: active ? activeColor.withOpacity(0.15) : AppColors.surface,
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(
+          color: active ? activeColor : AppColors.surfaceVariant,
+        ),
+      ),
+      child: IconButton(
+        icon: Icon(
+          icon,
+          color: active ? activeColor : AppColors.textSecondary,
+        ),
+        onPressed: onTap,
+      ),
+    );
+  }
+}
+
+// ─── Song Item ─────────────────────────────────────────────────────────────
+class _SongItem extends StatelessWidget {
+  const _SongItem({
+    required this.songNumber,
+    required this.track,
+    required this.artColor,
+    required this.duration,
+    required this.accentColor,
+    required this.onTap,
+  });
+
+  final int songNumber;
+  final MusicTrack track;
+  final Color artColor;
+  final String duration;
+  final Color accentColor;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: NesContainer(
-        padding: const EdgeInsets.all(16),
-        backgroundColor: AppColors.surface,
-        child: Row(
-          children: [
-            // Song number
-            SizedBox(
-              width: 30,
-              child: Text(
-                songNumber.toString(),
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 16),
-              ),
-            ),
-
-            SizedBox(width: 16),
-
-            // Song info
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                    ),
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Material(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(4),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(4),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                // Number / artwork
+                SizedBox(
+                  width: 44,
+                  height: 44,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [artColor, artColor.withOpacity(0.4)],
+                          ),
+                        ),
+                      ),
+                      Text(
+                        songNumber.toString(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
                   ),
-                  SizedBox(height: 4),
-                  Text(
-                    artist,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppColors.textSecondary,
-                    ),
+                ),
+                const SizedBox(width: 12),
+                // Info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        track.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.copyWith(color: AppColors.textPrimary),
+                      ),
+                      Text(
+                        track.artist,
+                        maxLines: 1,
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(color: AppColors.textSecondary),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                // Duration
+                Text(
+                  duration,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: AppColors.textDisabled,
+                    fontSize: 9,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: const Icon(Icons.more_vert,
+                      color: AppColors.textSecondary, size: 18),
+                  onPressed: () => _showOptions(context),
+                ),
+              ],
             ),
-
-            // Duration
-            Text(
-              duration,
-              style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
-            ),
-
-            SizedBox(width: 16),
-
-            // More options
-            IconButton(
-              icon: Icon(Icons.more_vert, color: AppColors.textSecondary),
-              onPressed: () {
-                _showSongOptions(context);
-              },
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  void _showSongOptions(BuildContext context) {
+  void _showOptions(BuildContext context) {
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder:
-          (context) => Container(
-            padding: EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  leading: Icon(Icons.play_arrow, color: AppColors.primary),
-                  title: Text(
-                    'Play',
-                    style: TextStyle(color: AppColors.textPrimary),
-                  ),
-                  onTap: () {
-                    Navigator.pop(context);
-                    onTap();
-                  },
-                ),
-                ListTile(
-                  leading: Icon(
-                    Icons.playlist_add,
-                    color: AppColors.textPrimary,
-                  ),
-                  title: Text(
-                    'Add to Playlist',
-                    style: TextStyle(color: AppColors.textPrimary),
-                  ),
-                  onTap: () => Navigator.pop(context),
-                ),
-                ListTile(
-                  leading: Icon(
-                    Icons.favorite_border,
-                    color: AppColors.textPrimary,
-                  ),
-                  title: Text(
-                    'Add to Favorites',
-                    style: TextStyle(color: AppColors.textPrimary),
-                  ),
-                  onTap: () => Navigator.pop(context),
-                ),
-                ListTile(
-                  leading: Icon(Icons.share, color: AppColors.textPrimary),
-                  title: Text(
-                    'Share',
-                    style: TextStyle(color: AppColors.textPrimary),
-                  ),
-                  onTap: () => Navigator.pop(context),
-                ),
-                ListTile(
-                  leading: Icon(
-                    Icons.info_outline,
-                    color: AppColors.textPrimary,
-                  ),
-                  title: Text(
-                    'Song Info',
-                    style: TextStyle(color: AppColors.textPrimary),
-                  ),
-                  onTap: () => Navigator.pop(context),
-                ),
-              ],
+      builder: (context) => Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 32,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceVariant,
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
-          ),
+            ListTile(
+              leading: const Icon(Icons.play_arrow, color: AppColors.primary),
+              title: const Text('Play', style: TextStyle(color: AppColors.textPrimary)),
+              onTap: () { Navigator.pop(context); onTap(); },
+            ),
+            ListTile(
+              leading: const Icon(Icons.playlist_add, color: AppColors.textPrimary),
+              title: const Text('Add to Playlist', style: TextStyle(color: AppColors.textPrimary)),
+              onTap: () => Navigator.pop(context),
+            ),
+            ListTile(
+              leading: const Icon(Icons.favorite_border, color: AppColors.textPrimary),
+              title: const Text('Add to Favorites', style: TextStyle(color: AppColors.textPrimary)),
+              onTap: () => Navigator.pop(context),
+            ),
+            ListTile(
+              leading: const Icon(Icons.share, color: AppColors.textPrimary),
+              title: const Text('Share', style: TextStyle(color: AppColors.textPrimary)),
+              onTap: () => Navigator.pop(context),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

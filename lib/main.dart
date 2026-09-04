@@ -107,9 +107,13 @@ class PIXLApp extends StatelessWidget {
             // Handle playlist route with arguments
             final args = settings.arguments as Map<String, dynamic>?;
             return MaterialPageRoute(
-              builder:
-                  (context) =>
-                      PlaylistPage(playlistId: args?['playlistId'] ?? ''),
+              builder: (context) => PlaylistPage(
+                playlistId: args?['playlistId'] ?? '',
+                playlistName: args?['playlistName'] as String?,
+                accentColor: args?['accentColor'] != null
+                    ? Color(args!['accentColor'] as int)
+                    : null,
+              ),
             );
           default:
             return MaterialPageRoute(

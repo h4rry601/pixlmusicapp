@@ -9,6 +9,8 @@ class PlaybackSnapshot {
     required this.bufferedPosition,
     required this.queue,
     this.currentItem,
+    this.shuffleMode = AudioServiceShuffleMode.none,
+    this.repeatMode = AudioServiceRepeatMode.none,
   });
 
   factory PlaybackSnapshot.empty() {
@@ -29,4 +31,6 @@ class PlaybackSnapshot {
   final Duration bufferedPosition;
   final List<MediaItem> queue;
   final MediaItem? currentItem;
+  final AudioServiceShuffleMode shuffleMode;
+  final AudioServiceRepeatMode repeatMode;
 }

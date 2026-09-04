@@ -30,6 +30,8 @@ class AudioController {
           bufferedPosition: playbackState.bufferedPosition,
           currentItem: mediaItem,
           queue: queue,
+          shuffleMode: playbackState.shuffleMode,
+          repeatMode: playbackState.repeatMode,
         );
       },
     ).startWith(PlaybackSnapshot.empty());
@@ -60,4 +62,10 @@ class AudioController {
   Future<void> skipToNext() => _audioHandler.skipToNext();
 
   Future<void> skipToPrevious() => _audioHandler.skipToPrevious();
+
+  Future<void> setShuffleMode(AudioServiceShuffleMode mode) =>
+      _audioHandler.setShuffleMode(mode);
+
+  Future<void> setRepeatMode(AudioServiceRepeatMode mode) =>
+      _audioHandler.setRepeatMode(mode);
 }

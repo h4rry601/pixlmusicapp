@@ -5,6 +5,7 @@ import 'package:just_audio/just_audio.dart';
 
 import '../../features/audio/application/audio_controller.dart';
 import '../../features/audio/data/services/pixl_audio_handler.dart';
+import '../../features/catalog/services/recommendation_service.dart';
 
 final GetIt getIt = GetIt.instance;
 
@@ -21,6 +22,11 @@ Future<void> setupDependencies() async {
   getIt.registerSingleton<AudioHandler>(audioHandler);
   getIt.registerLazySingleton<AudioController>(
     () => AudioController(getIt<AudioHandler>()),
+  );
+
+  // Catalog services
+  getIt.registerLazySingleton<RecommendationService>(
+    () => RecommendationService(),
   );
 
   // Example of how to register feature dependencies:
